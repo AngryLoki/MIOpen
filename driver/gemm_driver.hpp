@@ -207,6 +207,19 @@ int GemmDriver<T>::GetandSetData()
     gemm_desc.strideB = gemm_desc.k * gemm_desc.n;
     gemm_desc.strideC = gemm_desc.m * gemm_desc.n;
 
+    if constexpr (std::is_same_v<T, float>)
+    {
+        gemm_desc.dataType = miopenFloat;
+    }
+    else if constexpr (std::is_same_v<T, float16>)
+    {
+        gemm_desc.dataType = miopenHalf;
+    }
+    else
+    {
+        static_assert(!"unsupported type");
+    }
+
     return (0);
 }
 
@@ -230,9 +243,9 @@ int GemmDriver<T>::AllocateBuffersAndCopy()
     a = std::vector<T>(a_sz);
     b = std::vector<T>(b_sz);
 #if GEMM_DRIVER_DEBUG
-    c = std::vector<T>(c_sz, 1.);
+    c = std::vector<T>(c_sz, static_cast<T>(1.));
 #else
-    c                 = std::vector<T>(c_sz, 0.);
+    c = std::vector<T>(c_sz, static_cast<T>(0.));
 #endif
     chost = c;
 
